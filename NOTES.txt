@@ -1,0 +1,30 @@
+NOTES
+================================================
+SPRING CLOUD CONFIG SERVER
+--------------------------
+- By default when you change properties file,config server recognises it automatically and picks it immediately.
+- You can verify it by accessing : http://localhost:8888/{spring-application-name}/{profile}
+- But Client services are not aware of it automatically.
+- To make the changes reflected on running Client micro-services, you will have to trigger /actuator/refresh 
+  on each microservices individually.
+
+SPRING CLOUD BUS
+----------------
+- You can use spring cloud bus with message brokers by which you can refresh the 
+  properties for all running microservices with just one api hit /actuator/busrefresh
+- Run RabbitMQ instance 
+  docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4-management
+- configure bus in server + all clients
+- expose /actuator/busrefresh
+- hit the above api for any of the services ( even config server will work ) and it will automatically refreshes for all microservices.
+
+SPRING CLOUD BUS + CONFIG MONITOR
+---------------------------------
+- You can fully automate the automatic configuration change for all microservices using config monitor.
+- Add config monitor in config server.
+- It will expose an api /monitor.
+- Configure webhook in GitHub => Repository -> Settings -> webhook
+- You cant directly use localhost url hence use some online webhook proxies tool like SMEE:
+        >> npm install --global smee-client    
+        >> smee --url WEBHOOK_PROXY_URL --path /webhook --port <YOUR_PORT>
+        >> smee --url https://smee.io/QC4UMQzFsHb8O6qJ --path /monitor --port 8888

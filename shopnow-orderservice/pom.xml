@@ -28,6 +28,11 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-config</artifactId>
 		</dependency>
+		<!--SPRING CLOUD BUS WILL HELP TO REFRESH CONFIGURATION CHANGES AUTOMATICALLY -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-bus-amqp</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -87,7 +92,7 @@
 		</dependencies>
 	</dependencyManagement>
 	<build>
-		<finalName>shopnow-${project.name}</finalName>
+		<finalName>${project.artifactId}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
