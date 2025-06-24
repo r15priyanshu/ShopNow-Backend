@@ -28,3 +28,9 @@ SPRING CLOUD BUS + CONFIG MONITOR
         >> npm install --global smee-client    
         >> smee --url WEBHOOK_PROXY_URL --path /webhook --port <YOUR_PORT>
         >> smee --url https://smee.io/QC4UMQzFsHb8O6qJ --path /monitor --port 8888
+
+
+LIVENESS AND READINESS PROBE
+----------------------------
+You can enable the /actuator/health/liveness and /actuator/health/readiness for your spring boot projects, and you can use these to find
+whether your application is healthy or not.
