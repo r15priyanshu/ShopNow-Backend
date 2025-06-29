@@ -20,17 +20,16 @@ import com.anshuit.shopnow.orderservice.repositories.OrderRepository;
 public class OrderServiceImpl implements OrderService {
 
 	@Autowired
-	OrderRepository orderRepository;
+	private OrderRepository orderRepository;
 
 	@Autowired
-	CartService cartService;
+	private CartService cartService;
 
 	@Autowired
-	ProductServiceExternal productServiceExternal;
+	private ProductServiceExternal productServiceExternal;
 
-	// This method will fetch each items in the cart and create orders for each of
-	// them and
-	// ultimately remove items from the cart
+	// THIS METHOD WILL FETCH EACH ITEMS IN THE CART AND CREATE ORDERS FOR EACH OF
+	// THEM AND ULTIMATELY REMOVE ITEMS FROM THE CART
 	@Override
 	public List<Order> createOrder(Integer cid, ShippingDetailsDto shippingDetailsDto) {
 		List<CartItem> allItemsInCartByCustomerId = cartService.getAllItemsInCartByCustomerId(cid);
@@ -39,14 +38,14 @@ public class OrderServiceImpl implements OrderService {
 
 		List<Order> createdOrders = allItemsInCartByCustomerId.stream().map((item) -> {
 
-			// creating new order
+			// CREATING NEW ORDER
 			Order newOrder = Order.builder().productid(item.getProductid()).customerid(cid)
 					.orderdate(LocalDateTime.now()).fullname(shippingDetailsDto.getFullname())
 					.address(shippingDetailsDto.getAddress()).email(shippingDetailsDto.getEmail())
 					.paymenttype(shippingDetailsDto.getPaymenttype()).mobile(shippingDetailsDto.getPaymenttype())
 					.build();
 			orderRepository.save(newOrder);
-			// now delete the cart item after order is placed
+			// NOW DELETE THE CART ITEM AFTER ORDER IS PLACED
 			cartService.deleteFromCart(item.getCartitemid());
 			return newOrder;
 		}).collect(Collectors.toList());

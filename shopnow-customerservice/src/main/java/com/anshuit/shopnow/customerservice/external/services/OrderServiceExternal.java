@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.anshuit.shopnow.customerservice.external.dtos.Order;
 
-@FeignClient(name = "ORDER-MICROSERVICE", path = "/oms")
+@FeignClient(name = "SHOPNOW-ORDER-SERVICE", path = "/oms")
 public interface OrderServiceExternal {
 
 	@GetMapping("/orders/customer/{cid}")
-	public List<Order> getAllOrdersByCustomerId(@PathVariable("cid") Integer cid);
+	public List<Order> getAllOrdersByCustomerId(@PathVariable("cid") int cid);
 }

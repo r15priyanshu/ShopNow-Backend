@@ -1,0 +1,219 @@
+#DEFINING CUSTOM NETWORK
+networks:
+  shopnow-network:
+    name: shopnow-network
+    driver: bridge
+
+#DEFINING CUSTOM VOLUMES   
+volumes:
+  shopnow-database-data:
+    name: shopnow-database-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: D:\DOCKER-VOLUMES\shopnow\database-data\
+      
+  shopnow-backend-data:
+    name: shopnow-backend-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: D:\DOCKER-VOLUMES\shopnow\backend-data\
+
+############################### DEFINING ALL SERVICES ###############################
+services:
+  shopnow-database:
+    image: mysql:8.0.36
+    container_name: shopnow-mysql-instance
+    networks:
+      - shopnow-network
+    ports:
+      - 4406:3306
+    volumes:
+      - shopnow-database-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: shopnow
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+
+  shopnow-rabbitmq:
+    image: rabbitmq:4-management
+    container_name: shopnow-rabbitmq-instance
+    hostname: rabbitmq
+    networks:
+      - shopnow-network
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+
+  shopnow-eurekaserver:
+    #If you specify build, then it will try to look for Dockerfile for this service in the context provided. 
+    build: 
+      context: ./shopnow-eurekaserver
+      dockerfile: Dockerfile
+    image: r15priyanshu/shopnow-eurekaserver:latest
+    restart: always
+    container_name: shopnow-eurekaserver-instance
+    networks: 
+      - shopnow-network
+    ports:
+      - 8761:8761
+    environment:
+      EUREKA_INSTANCE_HOSTNAME: shopnow-eurekaserver
+    healthcheck:
+      test: "curl --fail --silent localhost:8761/actuator/health/readiness | grep UP || exit 1"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      shopnow-database:
+        condition: service_healthy
+
+  shopnow-configserver:
+    build: 
+      context: ./shopnow-configserver
+      dockerfile: Dockerfile
+    image: r15priyanshu/shopnow-configserver:latest
+    restart: always
+    container_name: shopnow-configserver-instance
+    networks: 
+      - shopnow-network
+    ports:
+      - 8888:8888
+    environment:
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: false
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://shopnow-eurekaserver:8761/eureka/
+      SPRING_RABBITMQ_HOST: shopnow-rabbitmq
+    healthcheck:
+      test: "curl --fail --silent localhost:8888/actuator/health/readiness | grep UP || exit 1"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      shopnow-rabbitmq:
+        condition: service_healthy
+      shopnow-eurekaserver:
+        condition: service_healthy
+
+  shopnow-customerservice:
+    build: 
+      context: ./shopnow-customerservice
+      dockerfile: Dockerfile 
+    image: r15priyanshu/shopnow-customerservice:latest
+    restart: always
+    container_name: shopnow-customerservice-instance
+    networks: 
+      - shopnow-network
+    ports:
+      - 9091:9091
+    environment:
+      SPRING_PROFILES_ACTIVE: prd
+      SPRING_DATASOURCE_URL: jdbc:mysql://shopnow-database:3306/shopnow
+      SPRING_CONFIG_IMPORT: configserver:http://shopnow-configserver:8888/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: false
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://shopnow-eurekaserver:8761/eureka/
+      SPRING_RABBITMQ_HOST: shopnow-rabbitmq
+    healthcheck:
+      test: "curl --fail --silent localhost:9091/cms/actuator/health/readiness | grep UP || exit 1"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+    depends_on:  
+      shopnow-configserver:
+        condition: service_healthy
+      
+    
+  shopnow-productservice:
+    build: 
+      context: ./shopnow-productservice
+      dockerfile: Dockerfile
+    image: r15priyanshu/shopnow-productservice:latest
+    restart: always
+    container_name: shopnow-productservice-instance
+    networks: 
+      - shopnow-network
+    ports:
+      - 9092:9092
+    environment:
+      SPRING_PROFILES_ACTIVE: prd
+      SPRING_DATASOURCE_URL: jdbc:mysql://shopnow-database:3306/shopnow
+      SPRING_CONFIG_IMPORT: configserver:http://shopnow-configserver:8888/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: false
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://shopnow-eurekaserver:8761/eureka/
+      SPRING_RABBITMQ_HOST: shopnow-rabbitmq
+    healthcheck:
+      test: "curl --fail --silent localhost:9092/pms/actuator/health/readiness | grep UP || exit 1"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      shopnow-configserver:
+        condition: service_healthy
+
+
+  shopnow-orderservice:
+    build: 
+      context: ./shopnow-orderservice
+      dockerfile: Dockerfile
+    image: r15priyanshu/shopnow-orderservice:latest
+    restart: always
+    container_name: shopnow-orderservice-instance
+    networks: 
+      - shopnow-network
+    ports:
+      - 9093:9093
+    environment:
+      SPRING_PROFILES_ACTIVE: prd
+      SPRING_DATASOURCE_URL: jdbc:mysql://shopnow-database:3306/shopnow
+      SPRING_CONFIG_IMPORT: configserver:http://shopnow-configserver:8888/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: false
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://shopnow-eurekaserver:8761/eureka/
+      SPRING_RABBITMQ_HOST: shopnow-rabbitmq
+    healthcheck:
+      test: "curl --fail --silent localhost:9093/oms/actuator/health/readiness | grep UP || exit 1"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      shopnow-configserver:
+        condition: service_healthy
+
+  shopnow-apigateway:
+    build: 
+      context: ./shopnow-apigateway
+      dockerfile: Dockerfile
+    image: r15priyanshu/shopnow-apigateway:latest
+    restart: always
+    container_name: shopnow-apigateway-instance
+    networks: 
+      - shopnow-network
+    ports:
+      - 9090:9090
+    environment:
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: false
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://shopnow-eurekaserver:8761/eureka/
+    depends_on:
+      shopnow-customerservice:
+        condition: service_healthy
+      shopnow-productservice:
+        condition: service_healthy
+      shopnow-orderservice:
+        condition: service_healthy
