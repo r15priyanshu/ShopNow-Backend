@@ -18,8 +18,8 @@ import com.anshuit.shopnow.productservice.repositories.ProductRepository;
 @Service
 public class ProductServiceImpl implements ProductService {
 
-	@Value("${shopnow.product-service.images.product-images}")
-	private String productImagePath;
+	@Value("${shopnow.product-service.images.product-images.path}")
+	private String productImagesFolderPath;
 
 	@Autowired
 	private ProductRepository productRepository;
@@ -38,7 +38,7 @@ public class ProductServiceImpl implements ProductService {
 
 		String fileNameWithTimestamp = null;
 		try {
-			fileNameWithTimestamp = fileService.uploadImage(productImagePath, file);
+			fileNameWithTimestamp = fileService.uploadImage(productImagesFolderPath, file);
 		} catch (IOException e) {
 			throw new CustomException("Error Occurred While Uploading Image !!", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -60,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public Product getProductById(int productId) {
 		Product foundProduct = getProductByIdOptional(productId)
-				.orElseThrow(() -> new CustomException("Product Not Found With Id:" + productId, HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new CustomException("Product Not Found With Id : " + productId, HttpStatus.NOT_FOUND));
 		return foundProduct;
 	}
 
@@ -73,7 +73,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public Product deleteProductById(int productId) {
 		Product foundProduct = getProductById(productId);
-		boolean imageDeleted = fileService.deleteImage(productImagePath, foundProduct.getProductImage());
+		boolean imageDeleted = fileService.deleteImage(productImagesFolderPath, foundProduct.getProductImage());
 		if (imageDeleted) {
 			productRepository.delete(foundProduct);
 		} else {

@@ -19,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.anshuit.shopnow.productservice.dtos.ProductDto;
 import com.anshuit.shopnow.productservice.entities.Product;
 import com.anshuit.shopnow.productservice.exceptions.CustomException;
+import com.anshuit.shopnow.productservice.services.DataTransferService;
 import com.anshuit.shopnow.productservice.services.FileService;
 import com.anshuit.shopnow.productservice.services.ProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,77 +33,81 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 public class ProductController {
 
-	@Value("${shopnow.images.productimages}")
-	private String productimagepath;
+	@Value("${shopnow.product-service.images.product-images.path}")
+	private String productImagesFolderPath;
 
 	@Autowired
-	ProductService productService;
+	private ProductService productService;
 
 	@Autowired
-	ObjectMapper objectMapper;
+	private ObjectMapper objectMapper;
 
 	@Autowired
-	FileService fileService;
+	private FileService fileService;
 
-//	@PostMapping("/products/category/{categoryid}")
-//	public ResponseEntity<Product> createProduct(@RequestBody Product product,@PathVariable("categoryid") Integer categoryid) {
-//		Product addedProduct = productService.addProduct(product,categoryid);
-//		return new ResponseEntity<Product>(addedProduct, HttpStatus.CREATED);
-//	}
+	@Autowired
+	private DataTransferService dataTransferService;
 
-	@PostMapping("/products/category/{categoryid}")
-	public ResponseEntity<Product> createProductWithImage(@RequestParam("product") String product,
-			@PathVariable("categoryid") Integer categoryid, @RequestParam("productimage") MultipartFile file) {
+	@PostMapping("/products/category/{categoryId}")
+	public ResponseEntity<ProductDto> createProductWithImage(@RequestParam("product") String product,
+			@PathVariable("categoryId") int categoryId, @RequestParam("productImage") MultipartFile file) {
 
 		Product newProduct = null;
 		try {
 			// CONVERTING STRING FORM OF JSON INTO ENTITY CLASS
 			newProduct = objectMapper.readValue(product, Product.class);
 		} catch (JsonProcessingException e) {
-			throw new CustomException("Error While Parsing JSON String to Product.class Entity",
+			throw new CustomException("Error While Parsing JSON String To Product.class Entity",
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		Product createdProduct = productService.createProduct(newProduct, categoryid, file);
+		Product createdProduct = productService.createProduct(newProduct, categoryId, file);
+		ProductDto createdProductDto = dataTransferService.mapProductToProductDto(createdProduct);
 
-		return new ResponseEntity<Product>(createdProduct, HttpStatus.CREATED);
+		return new ResponseEntity<>(createdProductDto, HttpStatus.CREATED);
 	}
 
-	// serve product Image
-	@GetMapping(value = "/images/serveimage/{imagename}", produces = MediaType.IMAGE_JPEG_VALUE)
-	public void serveImage(@PathVariable("imagename") String imagename, HttpServletResponse response) {
+	// SERVE PRODUCT IMAGE
+	@GetMapping(value = "/images/serveImage/{imageName}", produces = MediaType.IMAGE_JPEG_VALUE)
+	public void serveImage(@PathVariable("imageName") String imageName, HttpServletResponse response) {
 		try {
-			InputStream is = fileService.serveImage(productimagepath, imagename);
+			InputStream is = fileService.serveImage(productImagesFolderPath, imageName);
 			response.setContentType(MediaType.IMAGE_JPEG_VALUE);
 			StreamUtils.copy(is, response.getOutputStream());
 		} catch (FileNotFoundException e) {
-			throw new CustomException("File Not Found with the name:" + imagename, HttpStatus.BAD_REQUEST);
+			throw new CustomException("File Not Found With The Name : " + imageName, HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@GetMapping("/products/category/{categoryid}")
-	public ResponseEntity<List<Product>> getAllProductsByCategoryId(@PathVariable("categoryid") Integer categoryid) {
-		List<Product> products = productService.getAllProductsByCategoryId(categoryid);
-		return new ResponseEntity<List<Product>>(products, HttpStatus.OK);
+	@GetMapping("/products/category/{categoryId}")
+	public ResponseEntity<List<ProductDto>> getAllProductsByCategoryId(@PathVariable("categoryId") int categoryId) {
+		List<Product> products = productService.getAllProductsByCategoryId(categoryId);
+		List<ProductDto> productsDto = products.stream()
+				.map(product -> dataTransferService.mapProductToProductDto(product)).toList();
+		return new ResponseEntity<>(productsDto, HttpStatus.OK);
 	}
 
 	@GetMapping("/products")
-	public ResponseEntity<List<Product>> getAllProducts() {
+	public ResponseEntity<List<ProductDto>> getAllProducts() {
 		List<Product> allProducts = productService.getAllProducts();
-		return new ResponseEntity<List<Product>>(allProducts, HttpStatus.OK);
+		List<ProductDto> allProductsDto = allProducts.stream()
+				.map(product -> dataTransferService.mapProductToProductDto(product)).toList();
+		return new ResponseEntity<>(allProductsDto, HttpStatus.OK);
 	}
 
-	@GetMapping("/products/{pid}")
-	public ResponseEntity<Product> getProductById(@PathVariable("pid") Integer pid) {
-		Product foundProduct = productService.getProductById(pid);
-		return new ResponseEntity<Product>(foundProduct, HttpStatus.OK);
+	@GetMapping("/products/{productId}")
+	public ResponseEntity<ProductDto> getProductById(@PathVariable("productId") int productId) {
+		Product foundProduct = productService.getProductById(productId);
+		ProductDto foundProductDto = dataTransferService.mapProductToProductDto(foundProduct);
+		return new ResponseEntity<>(foundProductDto, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/products/{pid}")
-	public ResponseEntity<Product> deleteProductById(@PathVariable("pid") Integer pid) {
-		Product deletedProduct = productService.deleteProductById(pid);
-		return new ResponseEntity<Product>(deletedProduct, HttpStatus.OK);
+	@DeleteMapping("/products/{productId}")
+	public ResponseEntity<ProductDto> deleteProductById(@PathVariable("productId") int productId) {
+		Product deletedProduct = productService.deleteProductById(productId);
+		ProductDto deletedProductDto = dataTransferService.mapProductToProductDto(deletedProduct);
+		return new ResponseEntity<>(deletedProductDto, HttpStatus.OK);
 	}
 }

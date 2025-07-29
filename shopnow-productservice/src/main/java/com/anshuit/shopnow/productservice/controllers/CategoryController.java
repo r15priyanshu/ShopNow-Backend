@@ -12,32 +12,40 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.anshuit.shopnow.productservice.dtos.CategoryDto;
 import com.anshuit.shopnow.productservice.entities.Category;
 import com.anshuit.shopnow.productservice.services.CategoryService;
+import com.anshuit.shopnow.productservice.services.DataTransferService;
 
 @RestController
 public class CategoryController {
 
 	@Autowired
 	private CategoryService categoryService;
-	
-	@GetMapping("/categories")
-	public ResponseEntity<List<Category>> getAllCategories()
-	{
-		List<Category> allCategories = categoryService.getAllCategories();
-		return new ResponseEntity<List<Category>>(allCategories,HttpStatus.OK);
-	}
-	
+
+	@Autowired
+	private DataTransferService dataTransferService;
+
 	@PostMapping("/categories")
-	public ResponseEntity<Category> addCategory(@RequestBody Category category){
-		Category addedCategory = categoryService.createCategory(category);
-		return new ResponseEntity<Category>(addedCategory,HttpStatus.CREATED);
+	public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
+		Category category = dataTransferService.mapCategoryDToToCategory(categoryDto);
+		Category createdCategory = categoryService.createCategory(category);
+		CategoryDto createdCategoryDto = dataTransferService.mapCategoryToCategoryDto(createdCategory);
+		return new ResponseEntity<>(createdCategoryDto, HttpStatus.CREATED);
 	}
-	
-	@DeleteMapping("/categories/{categoryid}")
-	public ResponseEntity<Category> deleteCategoryById(@PathVariable("categoryid") Integer categoryid)
-	{
-		Category deletedCategory = categoryService.deleteCategoryById(categoryid);
-		return new ResponseEntity<Category>(deletedCategory,HttpStatus.OK);
+
+	@GetMapping("/categories")
+	public ResponseEntity<List<CategoryDto>> getAllCategories() {
+		List<Category> allCategories = categoryService.getAllCategories();
+		List<CategoryDto> allCategoriesDto = allCategories.stream()
+				.map(category -> dataTransferService.mapCategoryToCategoryDto(category)).toList();
+		return new ResponseEntity<>(allCategoriesDto, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/categories/{categoryId}")
+	public ResponseEntity<CategoryDto> deleteCategoryById(@PathVariable("categoryId") int categoryId) {
+		Category deletedCategory = categoryService.deleteCategoryById(categoryId);
+		CategoryDto deletedCategoryDto = dataTransferService.mapCategoryToCategoryDto(deletedCategory);
+		return new ResponseEntity<>(deletedCategoryDto, HttpStatus.OK);
 	}
 }
