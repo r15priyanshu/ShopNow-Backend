@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 import com.anshuit.shopnow.customerservice.entities.Customer;
 
 @Repository
-public interface CustomerRepository extends JpaRepository<Customer,Integer> {
+public interface CustomerRepository extends JpaRepository<Customer, Integer> {
 	Optional<Customer> findCustomerByEmail(String email);
-	Optional<Customer> findCustomerByEmailAndPassword(String email,String password);
+
+	Optional<Customer> findCustomerByEmailAndPassword(String email, String password);
 }

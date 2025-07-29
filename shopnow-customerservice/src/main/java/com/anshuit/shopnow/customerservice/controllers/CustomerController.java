@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.anshuit.shopnow.customerservice.dtos.CustomerDto;
 import com.anshuit.shopnow.customerservice.entities.Customer;
 import com.anshuit.shopnow.customerservice.services.CustomerService;
+import com.anshuit.shopnow.customerservice.services.DataTransferService;
 
 @RestController
 public class CustomerController {
@@ -22,40 +24,53 @@ public class CustomerController {
 	@Autowired
 	private CustomerService customerService;
 
+	@Autowired
+	private DataTransferService dataTransferService;
+
 	@PostMapping("/login")
-	public ResponseEntity<Customer> doLogin(@RequestBody Customer customer) {
-		Customer loggedinuser = customerService.doLogin(customer.getEmail(), customer.getPassword());
-		return new ResponseEntity<>(loggedinuser, HttpStatus.OK);
+	public ResponseEntity<CustomerDto> doLogin(@RequestBody CustomerDto customerDto) {
+		Customer foundCustomer = customerService.doLogin(customerDto.getEmail(), customerDto.getPassword());
+		CustomerDto foundCustomerDto = dataTransferService.mapCustomerToCustomerDto(foundCustomer);
+		return new ResponseEntity<>(foundCustomerDto, HttpStatus.OK);
 	}
 
 	@PostMapping("/customers")
-	public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer) {
-		Customer addedcustomer = customerService.addCustomer(customer);
-		return new ResponseEntity<Customer>(addedcustomer, HttpStatus.CREATED);
+	public ResponseEntity<CustomerDto> createCustomer(@RequestBody CustomerDto customerDto) {
+		Customer customer = dataTransferService.mapCustomerDToToCustomer(customerDto);
+		Customer createdCustomer = customerService.createCustomer(customer);
+		CustomerDto createdCustomerDto = dataTransferService.mapCustomerToCustomerDto(createdCustomer);
+		return new ResponseEntity<CustomerDto>(createdCustomerDto, HttpStatus.CREATED);
+	}
+
+	@PutMapping("/customers/{customerId}")
+	public ResponseEntity<CustomerDto> updateCustomerById(@PathVariable("customerId") int customerId,
+			@RequestBody CustomerDto customerDto) {
+		Customer customer = dataTransferService.mapCustomerDToToCustomer(customerDto);
+		Customer updatedCustomer = customerService.updateCustomerById(customerId, customer);
+		CustomerDto updatedCustomerDto = dataTransferService.mapCustomerToCustomerDto(updatedCustomer);
+		return new ResponseEntity<CustomerDto>(updatedCustomerDto, HttpStatus.OK);
 	}
 
 	@GetMapping("/customers")
-	public ResponseEntity<List<Customer>> getAllCustomers() {
+	public ResponseEntity<List<CustomerDto>> getAllCustomers() {
 		List<Customer> allCustomers = customerService.getAllCustomers();
-		return new ResponseEntity<List<Customer>>(allCustomers, HttpStatus.OK);
+		List<CustomerDto> allCustomersDto = allCustomers.stream()
+				.map(customer -> dataTransferService.mapCustomerToCustomerDto(customer)).toList();
+		return new ResponseEntity<List<CustomerDto>>(allCustomersDto, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/customers/{cid}")
-	public ResponseEntity<Customer> deleteCustomerById(@PathVariable("cid") Integer cid) {
-		Customer foundCustomer = customerService.deleteCustomerById(cid);
-		return new ResponseEntity<Customer>(foundCustomer, HttpStatus.OK);
+	@GetMapping("/customers/{customerId}")
+	public ResponseEntity<CustomerDto> getCustomerById(@PathVariable("customerId") int customerId) {
+		Customer foundCustomer = customerService.getCustomerById(customerId);
+		CustomerDto foundCustomerDto = dataTransferService.mapCustomerToCustomerDto(foundCustomer);
+		return new ResponseEntity<CustomerDto>(foundCustomerDto, HttpStatus.OK);
 	}
 
-	@PutMapping("/customers/{cid}")
-	public ResponseEntity<Customer> updateCustomerById(@PathVariable("cid") Integer cid,
-			@RequestBody Customer customer) {
-		Customer updatedCustomer = customerService.updateCustomerById(cid, customer);
-		return new ResponseEntity<Customer>(updatedCustomer, HttpStatus.OK);
+	@DeleteMapping("/customers/{customerId}")
+	public ResponseEntity<CustomerDto> deleteCustomerById(@PathVariable("customerId") int customerId) {
+		Customer deletedCustomer = customerService.deleteCustomerById(customerId);
+		CustomerDto deletedCustomerDto = dataTransferService.mapCustomerToCustomerDto(deletedCustomer);
+		return new ResponseEntity<CustomerDto>(deletedCustomerDto, HttpStatus.OK);
 	}
 
-	@GetMapping("/customers/{cid}")
-	public ResponseEntity<Customer> getCustomerById(@PathVariable("cid") Integer cid) {
-		Customer foundCustomer = customerService.getCustomerById(cid);
-		return new ResponseEntity<Customer>(foundCustomer, HttpStatus.OK);
-	}
 }

@@ -8,16 +8,18 @@ import com.anshuit.shopnow.customerservice.dtos.CustomerDto;
 import com.anshuit.shopnow.customerservice.entities.Customer;
 
 @Service
-public class DataTransferServiceImpl {
+public class DataTransferServiceImpl implements DataTransferService {
 
 	@Autowired
 	private ModelMapper modelMapper;
 
-	CustomerDto mapCustomerToCustomerDto(Customer customer) {
+	@Override
+	public CustomerDto mapCustomerToCustomerDto(Customer customer) {
 		return this.modelMapper.map(customer, CustomerDto.class);
 	}
 
-	Customer mapCustomerDToToCustomer(CustomerDto customerDto) {
+	@Override
+	public Customer mapCustomerDToToCustomer(CustomerDto customerDto) {
 		return this.modelMapper.map(customerDto, Customer.class);
 	}
 }

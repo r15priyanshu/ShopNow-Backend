@@ -9,13 +9,13 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ApiResponse {
+public class ApiResponseDto {
 	private String message;
 	private LocalDateTime timestamp;
 	private HttpStatus status;
 	private int statuscode;
 
-	public ApiResponse(String message, LocalDateTime timestamp, HttpStatus status, int statuscode) {
+	public ApiResponseDto(String message, LocalDateTime timestamp, HttpStatus status, int statuscode) {
 		super();
 		this.message = message;
 		this.timestamp = timestamp;
