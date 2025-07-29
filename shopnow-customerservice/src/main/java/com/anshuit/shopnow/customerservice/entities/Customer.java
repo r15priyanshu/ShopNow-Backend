@@ -19,12 +19,14 @@ import lombok.NoArgsConstructor;
 public class Customer {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer cid;
-	private String fullname;
+	private int customerId;
+	private String fullName;
 	private String email;
 	private String password;
 	private String mobile;
 	private String address;
 	@Builder.Default
-	private boolean isadmin=false;
+	private boolean admin = false;
+	@Builder.Default
+	private boolean registrationMailSent = false;
 }

@@ -3,28 +3,40 @@ package com.anshuit.shopnow.customerservice.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.anshuit.shopnow.customerservice.entities.Customer;
 import com.anshuit.shopnow.customerservice.exceptions.CustomException;
-import com.anshuit.shopnow.customerservice.external.services.OrderServiceExternal;
 import com.anshuit.shopnow.customerservice.repositories.CustomerRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
 	private CustomerRepository customerRepository;
 
 	@Autowired
-	private OrderServiceExternal orderServiceExternal;
+	private StreamBridge streamBridge;
 
 	@Override
 	public Customer addCustomer(Customer customer) {
 		if (customerRepository.findCustomerByEmail(customer.getEmail()).isPresent())
 			throw new CustomException("Email already registered : " + customer.getEmail(), HttpStatus.BAD_REQUEST);
-		return customerRepository.save(customer);
+		Customer savedCustomer = customerRepository.save(customer);
+		
+		//NAME OF THE OUTPUT BINDING WILL BE USED TO SEND EVENTS
+		boolean sendRegistrationEmailCommunication = streamBridge.send("sendRegistrationEmailRequest-out-0", savedCustomer);
+		log.info("Registration Email Communication Sent : {}", sendRegistrationEmailCommunication);
+		
+		boolean sendRegistrationSmsCommunication = streamBridge.send("sendRegistrationSmsRequest-out-0", savedCustomer);
+		log.info("Registration Sms Communication Sent : {}", sendRegistrationSmsCommunication);
+		
+		return savedCustomer;
 	}
 
 	@Override
@@ -59,7 +71,7 @@ public class CustomerServiceImpl implements CustomerService {
 		Customer foundCustomer = customerRepository.findById(cid)
 				.orElseThrow(() -> new CustomException("Customer not found with id:" + cid, HttpStatus.NOT_FOUND));
 
-		foundCustomer.setFullname(customer.getFullname());
+		foundCustomer.setFullName(customer.getFullName());
 		foundCustomer.setAddress(customer.getAddress());
 		foundCustomer.setMobile(customer.getMobile());
 		foundCustomer.setPassword(customer.getPassword());
