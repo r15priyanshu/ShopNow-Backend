@@ -62,7 +62,7 @@ public class ProductController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		Product createdProduct = productService.addProduct(newProduct, categoryid, file);
+		Product createdProduct = productService.createProduct(newProduct, categoryid, file);
 
 		return new ResponseEntity<Product>(createdProduct, HttpStatus.CREATED);
 	}

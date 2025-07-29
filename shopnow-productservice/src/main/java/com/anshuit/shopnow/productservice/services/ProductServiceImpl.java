@@ -2,6 +2,7 @@ package com.anshuit.shopnow.productservice.services;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,40 +13,38 @@ import org.springframework.web.multipart.MultipartFile;
 import com.anshuit.shopnow.productservice.entities.Category;
 import com.anshuit.shopnow.productservice.entities.Product;
 import com.anshuit.shopnow.productservice.exceptions.CustomException;
-import com.anshuit.shopnow.productservice.repositories.CategoryRepository;
 import com.anshuit.shopnow.productservice.repositories.ProductRepository;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
-	@Value("${shopnow.images.productimages}")
-	private String productimagepath;
+	@Value("${shopnow.product-service.images.product-images}")
+	private String productImagePath;
 
 	@Autowired
-	ProductRepository productRepository;
+	private ProductRepository productRepository;
 
 	@Autowired
-	CategoryRepository categoryRepository;
+	private CategoryService categoryService;
 
 	@Autowired
-	FileService fileService;
+	private FileService fileService;
 
 	@Override
-	public Product addProduct(Product product, Integer categoryid, MultipartFile file) {
+	public Product createProduct(Product product, int categoryId, MultipartFile file) {
 
-		Category category = categoryRepository.findById(categoryid).orElseThrow(
-				() -> new CustomException("Category not found with id:" + categoryid, HttpStatus.NOT_FOUND));
+		Category category = categoryService.getCategoryById(categoryId);
 		product.setCategory(category);
 
-		String filenamewithtimestamp = null;
+		String fileNameWithTimestamp = null;
 		try {
-			filenamewithtimestamp = fileService.uploadImage(productimagepath, file);
+			fileNameWithTimestamp = fileService.uploadImage(productImagePath, file);
 		} catch (IOException e) {
-			throw new CustomException("Error Occurred while uploading Image", HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new CustomException("Error Occurred While Uploading Image !!", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		product.setProductimage(filenamewithtimestamp);
-		Product addedProduct = productRepository.save(product);
-		return addedProduct;
+		product.setProductImage(fileNameWithTimestamp);
+		Product createdProduct = productRepository.save(product);
+		return createdProduct;
 	}
 
 	@Override
@@ -54,9 +53,14 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public Product getProductById(Integer id) {
-		Product foundProduct = productRepository.findById(id)
-				.orElseThrow(() -> new CustomException("Product not found with id:" + id, HttpStatus.NOT_FOUND));
+	public Optional<Product> getProductByIdOptional(int productId) {
+		return productRepository.findById(productId);
+	}
+
+	@Override
+	public Product getProductById(int productId) {
+		Product foundProduct = getProductByIdOptional(productId)
+				.orElseThrow(() -> new CustomException("Product Not Found With Id:" + productId, HttpStatus.NOT_FOUND));
 		return foundProduct;
 	}
 
@@ -67,27 +71,25 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public Product deleteProductById(Integer id) {
-		Product foundProduct = productRepository.findById(id)
-				.orElseThrow(() -> new CustomException("Product not found with id:" + id, HttpStatus.NOT_FOUND));
-		boolean imageDeleted = fileService.deleteImage(productimagepath, foundProduct.getProductimage());
-		if(imageDeleted) {
+	public Product deleteProductById(int productId) {
+		Product foundProduct = getProductById(productId);
+		boolean imageDeleted = fileService.deleteImage(productImagePath, foundProduct.getProductImage());
+		if (imageDeleted) {
 			productRepository.delete(foundProduct);
-		}else {
-			throw new CustomException("Error While Deleting Image,[Migth be open/in use else where]",HttpStatus.INTERNAL_SERVER_ERROR);
+		} else {
+			throw new CustomException("Error While Deleting Image,[ Might Be Open/In-Use Else Where ]",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return foundProduct;
 	}
 
 	@Override
-	public List<Product> getAllProductsByCategoryId(Integer categoryid) {
-		if (categoryid == 0)
-			return productRepository.findAll();
+	public List<Product> getAllProductsByCategoryId(int categoryId) {
+		if (categoryId == 0)
+			return getAllProducts();
 
-		Category category = categoryRepository.findById(categoryid).orElseThrow(
-				() -> new CustomException("Category not found with id:" + categoryid, HttpStatus.NOT_FOUND));
+		Category category = categoryService.getCategoryById(categoryId);
 		List<Product> products = productRepository.findProductByCategory(category);
 		return products;
 	}
-
 }

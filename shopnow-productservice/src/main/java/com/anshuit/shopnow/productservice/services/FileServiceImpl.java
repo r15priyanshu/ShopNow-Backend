@@ -18,61 +18,51 @@ import com.anshuit.shopnow.productservice.exceptions.CustomException;
 public class FileServiceImpl implements FileService {
 
 	@Override
-	public String uploadImage(String folderpath, MultipartFile file) throws IOException {
-		//folderpath will be like : /images/posts OR /images/userprofiles that will be passed from outside
-		String filename=file.getOriginalFilename();
-		String filenamewithtimestamp="";
-		if(filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg")) {
-			Date d=new Date();
-			filenamewithtimestamp=d.getTime()+"-"+filename;
-			
-		}else {
-			throw new CustomException("File Format Not Supported",HttpStatus.BAD_REQUEST);
+	public String uploadImage(String folderPath, MultipartFile file) throws IOException {
+		// folderPath WILL BE LIKE : images/product-images THAT WILL BE PASSED
+		String fileName = file.getOriginalFilename();
+		String fileNameWithTimestamp = "";
+		if (fileName.endsWith(".png") || fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+			Date d = new Date();
+			fileNameWithTimestamp = d.getTime() + "-" + fileName;
+		} else {
+			throw new CustomException("File Format Not Supported", HttpStatus.BAD_REQUEST);
 		}
-		
-		//creating fullpath along with image name
-		String fullfilepath=folderpath+File.separator+filenamewithtimestamp;
-		
-		//create folder where images will be stored if already not created
-		File f=new File(folderpath);
-		if(!f.exists()) {
-			//System.out.println(f.getAbsolutePath());
+
+		// CREATING FULLPATH ALONG WITH IMAGE NAME
+		String fullFilePath = folderPath + File.separator + fileNameWithTimestamp;
+
+		// CREATE FOLDER WHERE IMAGES WILL BE STORED IF ALREADY NOT CREATED
+		File f = new File(folderPath);
+		if (!f.exists()) {
 			f.mkdirs();
 		}
-			
+
 		try {
-			//Files.copy(file.getInputStream(),Paths.get(fullfilepath));
 			byte[] data = file.getBytes();
-			FileOutputStream fos=new FileOutputStream(fullfilepath);
+			FileOutputStream fos = new FileOutputStream(fullFilePath);
 			fos.write(data);
 			fos.close();
-
-		}catch (Exception e) {
+		} catch (Exception e) {
 			System.out.println("Some Error Occured");
 		}
-		return filenamewithtimestamp;
+		return fileNameWithTimestamp;
 	}
 
 	@Override
-	public InputStream serveImage(String folderpath, String filename) throws FileNotFoundException {
-		//folderpath will be like : /images/posts OR /images/userprofiles that will be passed from outside
-		
-		String fullfilepath=folderpath+File.separator+filename;
-		InputStream is=new FileInputStream(fullfilepath);
+	public InputStream serveImage(String folderPath, String fileName) throws FileNotFoundException {
+		String fullFilePath = folderPath + File.separator + fileName;
+		InputStream is = new FileInputStream(fullFilePath);
 		return is;
 	}
 
 	@Override
-	public boolean deleteImage(String folderpath, String imagename) {
-		// TODO Auto-generated method stub
-		File f=new File(folderpath+File.separator+imagename);
-		System.out.println(f.getAbsolutePath());
-		
-		if(f.exists()) {
-			boolean result=f.delete();
-			System.out.println("Image Deleted :"+result);
+	public boolean deleteImage(String folderPath, String imageName) {
+		File f = new File(folderPath + File.separator + imageName);
+		if (f.exists()) {
+			boolean result = f.delete();
 			return result;
-		}else {
+		} else {
 			return false;
 		}
 	}

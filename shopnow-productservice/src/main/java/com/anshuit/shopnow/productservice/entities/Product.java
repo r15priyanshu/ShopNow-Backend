@@ -8,8 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,22 +16,20 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Table(name = "products")
 public class Product {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer pid;
-	private String name;
+	private int productId;
+	private String productName;
 
 	@Column(length = 5000)
-	private String description;
-	private String productimage;
-	private int price;
-	
+	private String productDescription;
+	private String productImage;
+	private double productPrice;
+
 	@OneToOne
-	@JoinColumn(name = "categoryid")
+	@JoinColumn(name = "categoryId")
 	private Category category;
 }

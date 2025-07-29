@@ -1,21 +1,24 @@
 package com.anshuit.shopnow.productservice.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.anshuit.shopnow.productservice.entities.Product;
 
 public interface ProductService {
-	Product addProduct(Product product,Integer categoryid,MultipartFile file);
+	Product createProduct(Product product, int categoryId, MultipartFile file);
 
 	Product updateProduct(Product product);
 
-	Product getProductById(Integer id);
+	Optional<Product> getProductByIdOptional(int productId);
+
+	Product getProductById(int productId);
 
 	List<Product> getAllProducts();
 
-	Product deleteProductById(Integer id);
-	
-	List<Product> getAllProductsByCategoryId(Integer categoryid);
+	Product deleteProductById(int productId);
+
+	List<Product> getAllProductsByCategoryId(int categoryId);
 }
