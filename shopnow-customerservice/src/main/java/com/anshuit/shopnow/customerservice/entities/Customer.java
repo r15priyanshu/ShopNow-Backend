@@ -29,4 +29,6 @@ public class Customer {
 	private boolean admin = false;
 	@Builder.Default
 	private boolean registrationMailSent = false;
+	@Builder.Default
+	private boolean registrationSmsSent = false;
 }

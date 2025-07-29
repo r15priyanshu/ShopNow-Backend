@@ -16,6 +16,10 @@ public interface CustomerService {
 	Customer getCustomerById(int customerId);
 
 	List<Customer> getAllCustomers();
+	
+	Customer updateRegistrationMailSent(int customerId);
+	
+	Customer updateRegistrationSmsSent(int customerId);
 
 	Customer deleteCustomerById(int customerId);
 

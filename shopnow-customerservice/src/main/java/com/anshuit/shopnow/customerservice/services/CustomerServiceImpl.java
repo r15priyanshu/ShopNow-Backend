@@ -42,7 +42,8 @@ public class CustomerServiceImpl implements CustomerService {
 				createdCustomer);
 		log.info("Registration Email Communication Sent : {}", sendRegistrationEmailCommunication);
 
-		boolean sendRegistrationSmsCommunication = streamBridge.send("sendRegistrationSmsRequest-out-0", createdCustomer);
+		boolean sendRegistrationSmsCommunication = streamBridge.send("sendRegistrationSmsRequest-out-0",
+				createdCustomer);
 		log.info("Registration Sms Communication Sent : {}", sendRegistrationSmsCommunication);
 
 		return createdCustomer;
@@ -52,9 +53,8 @@ public class CustomerServiceImpl implements CustomerService {
 	public Customer updateCustomerById(int customerId, Customer customer) {
 		Customer foundCustomer = getCustomerById(customerId);
 		foundCustomer.setFullName(customer.getFullName());
-		foundCustomer.setAddress(customer.getAddress());
 		foundCustomer.setMobile(customer.getMobile());
-		foundCustomer.setPassword(customer.getPassword());
+		foundCustomer.setAddress(customer.getAddress());
 		Customer updatedCustomer = saveOrUpdateCustomer(foundCustomer);
 		return updatedCustomer;
 	}
@@ -74,6 +74,20 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public List<Customer> getAllCustomers() {
 		return customerRepository.findAll();
+	}
+
+	@Override
+	public Customer updateRegistrationMailSent(int customerId) {
+		Customer foundCustomer = getCustomerById(customerId);
+		foundCustomer.setRegistrationMailSent(true);
+		return saveOrUpdateCustomer(foundCustomer);
+	}
+	
+	@Override
+	public Customer updateRegistrationSmsSent(int customerId) {
+		Customer foundCustomer = getCustomerById(customerId);
+		foundCustomer.setRegistrationSmsSent(true);
+		return saveOrUpdateCustomer(foundCustomer);
 	}
 
 	@Override

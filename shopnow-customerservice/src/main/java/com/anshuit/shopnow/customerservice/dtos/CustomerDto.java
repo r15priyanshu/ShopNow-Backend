@@ -14,4 +14,5 @@ public class CustomerDto {
 	private String address;
 	private boolean admin;
 	private boolean registrationMailSent;
+	private boolean registrationSmsSent;
 }
