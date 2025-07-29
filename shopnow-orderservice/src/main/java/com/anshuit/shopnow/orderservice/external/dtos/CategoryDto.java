@@ -1,17 +1,12 @@
 package com.anshuit.shopnow.orderservice.external.dtos;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Getter;
+import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Data
-@Builder
-@ToString
+
+@Getter
+@Setter
 public class CategoryDto {
-	private int categoryid;
-	private String categoryname;
+	private int categoryId;
+	private String categoryName;
 }

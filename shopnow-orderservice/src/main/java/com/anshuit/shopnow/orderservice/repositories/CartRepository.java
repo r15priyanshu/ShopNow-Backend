@@ -9,6 +9,5 @@ import com.anshuit.shopnow.orderservice.entities.CartItem;
 
 @Repository
 public interface CartRepository extends JpaRepository<CartItem, Integer> {
-
-	List<CartItem> findCartByCustomerid(Integer customerid);
+	List<CartItem> findCartByCustomerId(int customerId);
 }

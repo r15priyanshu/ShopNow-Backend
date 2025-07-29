@@ -18,24 +18,24 @@ import com.anshuit.shopnow.orderservice.services.CartService;
 public class CartController {
 
 	@Autowired
-	CartService cartService;
+	private CartService cartService;
 
-	@PostMapping("/carts/product/{pid}/customer/{cid}")
-	public ResponseEntity<CartItem> addToCart(@PathVariable("pid") Integer pid, @PathVariable("cid") Integer cid) {
-		CartItem addedToCart = cartService.addToCart(pid, cid);
+	@PostMapping("/carts/product/{productId}/customer/{customerId}")
+	public ResponseEntity<CartItem> addToCart(@PathVariable("productId") int productId,
+			@PathVariable("customerId") int customerId) {
+		CartItem addedToCart = cartService.addItemToCart(productId, customerId);
 		return new ResponseEntity<CartItem>(addedToCart, HttpStatus.CREATED);
 	}
-	
-	@DeleteMapping("/carts/{cartitemid}")
-	public ResponseEntity<CartItem> deleteFromCart( @PathVariable("cartitemid") Integer cartitemid) {
-		CartItem deletedCartItem = cartService.deleteFromCart(cartitemid);
+
+	@DeleteMapping("/carts/{cartItemId}")
+	public ResponseEntity<CartItem> deleteFromCart(@PathVariable("cartItemId") int cartItemId) {
+		CartItem deletedCartItem = cartService.deleteItemFromCart(cartItemId);
 		return new ResponseEntity<CartItem>(deletedCartItem, HttpStatus.OK);
 	}
 
-	@GetMapping("/carts/customer/{cid}")
-	public ResponseEntity<List<CartItem>> getAllCartItemsByCustomerId(@PathVariable("cid") Integer cid) {
-		System.out.println("BOKA");
-		List<CartItem> allItemsInCartByCustomerId = cartService.getAllItemsInCartByCustomerId(cid);
+	@GetMapping("/carts/customer/{customerId}")
+	public ResponseEntity<List<CartItem>> getAllCartItemsByCustomerId(@PathVariable("customerId") int customerId) {
+		List<CartItem> allItemsInCartByCustomerId = cartService.getAllItemsInCartByCustomerId(customerId);
 		return new ResponseEntity<>(allItemsInCartByCustomerId, HttpStatus.OK);
 	}
 }

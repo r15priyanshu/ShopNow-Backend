@@ -17,35 +17,32 @@ import com.anshuit.shopnow.orderservice.services.OrderService;
 
 @RestController
 public class OrderController {
-	
-	@Autowired
-	OrderService orderService;
 
-	@PostMapping("/orders/customer/{cid}")
-	public ResponseEntity<List<Order>> createOrder(@PathVariable("cid") Integer cid,@RequestBody ShippingDetailsDto shippingDetailsDto)
-	{
-		List<Order> createdOrders = orderService.createOrder(cid,shippingDetailsDto);
-		return new ResponseEntity<>(createdOrders,HttpStatus.CREATED);
+	@Autowired
+	private OrderService orderService;
+
+	@PostMapping("/orders/customer/{customerId}")
+	public ResponseEntity<List<Order>> createOrder(@PathVariable("customerId") int customerId,
+			@RequestBody ShippingDetailsDto shippingDetailsDto) {
+		List<Order> createdOrders = orderService.createOrder(customerId, shippingDetailsDto);
+		return new ResponseEntity<>(createdOrders, HttpStatus.CREATED);
 	}
-	
+
 	@GetMapping("/orders")
-	public ResponseEntity<List<Order>> getAllOrders()
-	{
+	public ResponseEntity<List<Order>> getAllOrders() {
 		List<Order> allOrders = orderService.getAllOrders();
-		return new ResponseEntity<>(allOrders,HttpStatus.OK);
+		return new ResponseEntity<>(allOrders, HttpStatus.OK);
 	}
-	
-	@GetMapping("/orders/{oid}")
-	public ResponseEntity<Order> getOrderById(@PathVariable("oid") Integer oid)
-	{
-		Order foundOrder = orderService.getOrderById(oid);
-		return new ResponseEntity<>(foundOrder,HttpStatus.OK);
+
+	@GetMapping("/orders/{orderId}")
+	public ResponseEntity<Order> getOrderById(@PathVariable("orderId") int orderId) {
+		Order foundOrder = orderService.getOrderById(orderId);
+		return new ResponseEntity<>(foundOrder, HttpStatus.OK);
 	}
-	
-	@GetMapping("/orders/customer/{cid}")
-	public ResponseEntity<List<Order>> getAllOrdersByCustomerId(@PathVariable("cid") Integer cid)
-	{
-		List<Order> allOrdersByCustomerId = orderService.getAllOrdersByCustomerId(cid);
-		return new ResponseEntity<>(allOrdersByCustomerId,HttpStatus.OK);
+
+	@GetMapping("/orders/customer/{customerId}")
+	public ResponseEntity<List<Order>> getAllOrdersByCustomerId(@PathVariable("customerId") int customerId) {
+		List<Order> allOrdersByCustomerId = orderService.getAllOrdersByCustomerId(customerId);
+		return new ResponseEntity<>(allOrdersByCustomerId, HttpStatus.OK);
 	}
 }

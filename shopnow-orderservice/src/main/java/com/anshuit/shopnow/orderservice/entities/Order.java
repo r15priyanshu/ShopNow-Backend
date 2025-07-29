@@ -19,24 +19,24 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Table(name = "orders")
 public class Order {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer orderid;
-	private Integer productid;
-	private Integer customerid;
-	private LocalDateTime orderdate;
-	private String fullname;
+	private int orderId;
+	private int productId;
+	private int customerId;
+	private LocalDateTime orderDate;
+	private String fullName;
 	private String mobile;
 	private String address;
-	private String paymenttype;
+	private String paymentType;
 	private String email;
-	
+
 	@Transient
 	private ProductDto product;
 }

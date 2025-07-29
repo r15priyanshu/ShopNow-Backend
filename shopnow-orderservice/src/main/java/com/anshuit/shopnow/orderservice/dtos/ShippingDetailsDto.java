@@ -1,14 +1,14 @@
 package com.anshuit.shopnow.orderservice.dtos;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@Builder
+@Getter
+@Setter
 public class ShippingDetailsDto {
-	private String fullname;
+	private String fullName;
 	private String mobile;
 	private String address;
-	private String paymenttype;
+	private String paymentType;
 	private String email;
 }

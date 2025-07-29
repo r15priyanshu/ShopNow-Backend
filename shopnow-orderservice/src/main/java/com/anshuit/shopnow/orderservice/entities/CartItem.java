@@ -26,10 +26,10 @@ import lombok.Setter;
 public class CartItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer cartitemid;
-	private Integer productid;
-	private Integer customerid;
-	private LocalDateTime addedtocartdate;
+	private int cartItemId;
+	private int productId;
+	private int customerId;
+	private LocalDateTime addedToCartDate;
 
 	@Transient
 	private ProductDto product;
